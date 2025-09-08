@@ -9,6 +9,14 @@ const Seat = ({ id, isSelected, onClick, onMouseEnter, groupColor }) => {
       onClick={() => onClick(id)}
       onMouseDown={() => onClick(id, 'dragStart')}
       onMouseEnter={() => onMouseEnter && onMouseEnter(id)}
+      onTouchStart={e => {
+        e.preventDefault();
+        onClick(id, 'dragStart');
+      }}
+      onTouchMove={e => {
+        e.preventDefault();
+        if (onMouseEnter) onMouseEnter(id);
+      }}
       style={{ display: 'inline-block', margin: '5px', cursor: 'pointer', userSelect: 'none' }}
     >
       <FontAwesomeIcon
