@@ -115,12 +115,7 @@ const Theater = () => {
     return () => document.removeEventListener('mouseup', handleMouseUp);
   }, [isDragging]);
 
-  // Autofocus label input whenever labeling mode is active and seats are selected
-  React.useEffect(() => {
-    if (isLabeling && selectedSeats.size > 0 && labelInputRef.current) {
-      labelInputRef.current.focus();
-    }
-  }, [isLabeling, selectedSeats]);
+  // Removed autofocus effect to prevent mobile keyboard popup before seat selection
 
   const handleLabelSubmit = (e) => {
     e.preventDefault();
@@ -499,9 +494,54 @@ const Theater = () => {
   // Calculate remaining unseated labeled chairs
   const remainingUnseated = Object.keys(seatLabels).filter(seatId => !satSeats.has(seatId)).length;
 
+  // Helper to get seatId from a touch event
+  const getSeatIdFromTouch = (touch, container) => {
+    const x = touch.clientX;
+    const y = touch.clientY;
+    const el = document.elementFromPoint(x, y);
+    if (!el) return null;
+    // Traverse up to find .seat
+    let seatDiv = el;
+    while (seatDiv && !seatDiv.classList.contains('seat')) {
+      seatDiv = seatDiv.parentElement;
+    }
+    if (seatDiv && seatDiv.getAttribute('data-seatid')) {
+      return seatDiv.getAttribute('data-seatid');
+    }
+    return null;
+  };
+
+  // Touch event handlers for drag-select
+  const handleTouchStart = (e) => {
+    if (!(isLabeling || isClearing)) return;
+    const container = e.currentTarget;
+    const touch = e.touches[0];
+    const seatId = getSeatIdFromTouch(touch, container);
+    if (seatId) {
+      handleSeatClick(seatId, 'dragStart');
+    }
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging || !(isLabeling || isClearing)) return;
+    const container = e.currentTarget;
+    const touch = e.touches[0];
+    const seatId = getSeatIdFromTouch(touch, container);
+    if (seatId) {
+      handleSeatMouseEnter(seatId);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    setDragStartSeat(null);
+  };
+
   return (
     <div className="theater">
       <div className="controls" style={{ marginBottom: '20px', textAlign: 'center' }}>
+        {/* ...existing code... */}
         <button
           onClick={() => {
             setMode(mode === 'labeling' ? 'none' : 'labeling');
@@ -607,7 +647,22 @@ const Theater = () => {
           Remaining unseated labeled chairs: {remainingUnseated}
         </div>
       )}
-      <div className="seating-area">
+      <div
+        className="seating-area"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          width: '100%',
+          maxWidth: '100vw',
+          boxSizing: 'border-box',
+          overflowX: 'auto',
+          padding: '0 2vw',
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {renderSeats()}
       </div>
     </div>
