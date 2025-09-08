@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/SeatingChart/static/css/main.2f758072.css",
+    "main.js": "/SeatingChart/static/js/main.08deccc8.js",
+    "static/js/453.96453769.chunk.js": "/SeatingChart/static/js/453.96453769.chunk.js",
+    "index.html": "/SeatingChart/index.html",
+    "main.2f758072.css.map": "/SeatingChart/static/css/main.2f758072.css.map",
+    "main.08deccc8.js.map": "/SeatingChart/static/js/main.08deccc8.js.map",
+    "453.96453769.chunk.js.map": "/SeatingChart/static/js/453.96453769.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.2f758072.css",
+    "static/js/main.08deccc8.js"
+  ]
+}
