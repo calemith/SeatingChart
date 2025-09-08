@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/SeatingChart/static/css/main.dea37583.css",
-    "main.js": "/SeatingChart/static/js/main.9a7eb329.js",
+    "main.css": "/SeatingChart/static/css/main.93919fbd.css",
+    "main.js": "/SeatingChart/static/js/main.52dfd75c.js",
     "static/js/453.96453769.chunk.js": "/SeatingChart/static/js/453.96453769.chunk.js",
     "index.html": "/SeatingChart/index.html",
-    "main.dea37583.css.map": "/SeatingChart/static/css/main.dea37583.css.map",
-    "main.9a7eb329.js.map": "/SeatingChart/static/js/main.9a7eb329.js.map",
+    "main.93919fbd.css.map": "/SeatingChart/static/css/main.93919fbd.css.map",
+    "main.52dfd75c.js.map": "/SeatingChart/static/js/main.52dfd75c.js.map",
     "453.96453769.chunk.js.map": "/SeatingChart/static/js/453.96453769.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.dea37583.css",
-    "static/js/main.9a7eb329.js"
+    "static/css/main.93919fbd.css",
+    "static/js/main.52dfd75c.js"
   ]
 }
