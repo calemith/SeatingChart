@@ -1,85 +1,132 @@
-
 import React, { useRef, useState, useEffect } from 'react';
+import { getDimensions } from '../config/dimensions';
+import { SPACING } from '../config/spacing';
 
-const SEAT_WIDTH = 40;
-const SEAT_MARGIN = 5; // Match Seat.js margin
-const AISLE_WIDTH = 80;
-
-// Helper: get left offset for a seat
-// If seat numbers start at 1, subtract 1 for index-based positioning
-function getSeatLeftOffset(side, number) {
-  const seatIndex = number - 1;
-  if (side === 'L') {
-    return seatIndex * (SEAT_WIDTH + SEAT_MARGIN);
-  } else if (side === 'R') {
-    const rightSideStart = (7 * (SEAT_WIDTH + SEAT_MARGIN)) + AISLE_WIDTH;
-    return rightSideStart + seatIndex * (SEAT_WIDTH + SEAT_MARGIN);
-  }
-  return 0;
-}
-
-
-function GroupLabel({ seats, label, color, isPreview = false, side, onClear, isSat = false }) {
+function GroupLabel({ seats, label, color, isPreview = false, onClear, isSat = false, side }) {
   const labelRef = useRef(null);
   const [isTruncated, setIsTruncated] = useState(false);
+  const [dimensions, setDimensions] = useState(getDimensions());
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(window.innerWidth <= 1024);
+
+  // Update dimensions and screen size on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setDimensions(getDimensions());
+      setIsMobileOrTablet(window.innerWidth <= 1024);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (labelRef.current) {
       setIsTruncated(labelRef.current.scrollWidth > labelRef.current.clientWidth);
     }
   }, [label, seats]);
-  // Parse seat coordinates
-  const seatIndices = Array.from(seats).map(seatId => {
-    const position = seatId.split('-')[2];
-    return parseInt(position.slice(1));
+
+  if (seats.size === 0) return null;
+
+  // Parse all seat IDs to get section and row info
+  const seatInfo = Array.from(seats).map(seatId => {
+    const [section, row, pos] = seatId.split('-');
+    return {
+      section,
+      row: parseInt(row),
+      side: pos[0],
+      index: parseInt(pos.slice(1)),
+      id: seatId
+    };
   });
-  if (seatIndices.length === 0) return null;
-  const minIndex = Math.min(...seatIndices);
-  const maxIndex = Math.max(...seatIndices);
-  const seatCount = maxIndex - minIndex + 1;
-  // For a single seat, label width should be SEAT_WIDTH
-  const labelWidth = seatCount === 1
-    ? SEAT_WIDTH
-    : (seatCount * SEAT_WIDTH) + ((seatCount - 1) * SEAT_MARGIN);
-  // For a single seat, align label exactly with seat
-  const labelLeft = minIndex * (SEAT_WIDTH + SEAT_MARGIN);
+
+  if (seatInfo.length === 0) return null;
+
+  // Group seats by row
+  const rowGroups = seatInfo.reduce((acc, seat) => {
+    const rowKey = `${seat.section}-${seat.row}`;
+    if (!acc[rowKey]) {
+      acc[rowKey] = [];
+    }
+    acc[rowKey].push(seat);
+    return acc;
+  }, {});
+
+  // Get dimensions of a single seat
+  const seatUnit = dimensions.seatWidth * (isMobileOrTablet ? 1.1 : 2); // Use smaller multiplier for mobile/tablet
+  const seatMargin = dimensions.seatMargin;
+
+  // Use the first row's seats for this label
+  const currentRow = Object.values(rowGroups)[0];
+  
+  // Sort seats by index within their side (L/R)
+  const leftSeats = currentRow.filter(seat => seat.side === 'L').sort((a, b) => a.index - b.index);
+  const rightSeats = currentRow.filter(seat => seat.side === 'R').sort((a, b) => a.index - b.index);
+
+  let startIndex, endIndex, labelWidth;
+  
+  if (leftSeats.length > 0) {
+    startIndex = leftSeats[0].index;
+    endIndex = leftSeats[leftSeats.length - 1].index;
+    labelWidth = ((endIndex - startIndex + 1) * seatUnit) + (endIndex - startIndex) * seatMargin;
+  } else if (rightSeats.length > 0) {
+    startIndex = rightSeats[0].index;
+    endIndex = rightSeats[rightSeats.length - 1].index;
+    labelWidth = ((endIndex - startIndex + 1) * seatUnit) + (endIndex - startIndex) * seatMargin;
+  } else {
+    return null;
+  }
+  
   // Handler for showing full text if truncated
   const handleLabelClick = () => {
     if (onClear) {
       onClear(label, seats);
     } else if (isTruncated) {
-      window.alert(label); // Replace with a tooltip/modal for production
+      window.alert(label);
     }
+  };
+
+  // Calculate position based on the selected seats
+  let startPos;
+  if (leftSeats.length > 0) {
+    // For left seats, start from their index position
+    startPos = leftSeats[0].index * (seatUnit + seatMargin);
+  } else {
+    startPos = rightSeats[0].index * (seatUnit + seatMargin);
+  }
+
+  const style = {
+    position: 'absolute',
+    left: `${startPos}px`,
+    top: '5px', // Position directly on top of the seats
+    width: `${labelWidth}px`,
+    padding: '2px 4px',
+    backgroundColor: color,
+    color: '#000',
+    fontSize: `${Math.max(8, Math.min(11, dimensions.seatWidth * 0.45))}px`,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: isPreview ? 21 : (isSat ? 20 : 25), // Increased z-index to ensure label is above seats
+    boxShadow: '0 1px 1px rgba(0,0,0,0.15)',
+    border: isPreview ? '1px dashed #000' : '1px solid rgba(0,0,0,0.1)',
+    opacity: isPreview ? 0.4 : 0.6, // 50% opacity for regular labels, slightly more transparent for previews
+    cursor: (onClear || isTruncated) ? 'pointer' : 'default',
+    textDecoration: isSat ? 'line-through' : 'none',
+    borderRadius: '2px',
+    lineHeight: '1',
+    height: `${Math.max(12, dimensions.seatWidth * 0.6)}px`,
+    margin: 0,
+    minWidth: `${dimensions.seatWidth}px` // Ensure label is at least as wide as one seat
   };
 
   return (
     <div
       ref={labelRef}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: `${labelLeft}px`,
-        width: `${labelWidth}px`,
-        backgroundColor: color,
-        color: '#000000',
-        padding: '4px 0',
-        borderRadius: '4px',
-        fontSize: '14px',
-        fontWeight: '700',
-        textTransform: 'uppercase',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        maxWidth: '100%',
-        display: 'block',
-        zIndex: isPreview ? 11 : 10,
-        textAlign: 'center',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-        border: isPreview ? '2px dashed #000' : 'none',
-        opacity: isPreview ? 0.8 : 0.5,
-        cursor: (onClear || isTruncated) ? 'pointer' : 'default',
-  textDecoration: isSat ? 'line-through' : 'none',
-      }}
+      style={style}
       onClick={handleLabelClick}
       title={onClear ? 'Click to clear all seats for this label' : (isTruncated ? 'Click to show full label' : undefined)}
     >

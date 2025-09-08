@@ -1,6 +1,8 @@
 import React from 'react';
 import Theater from './components/Theater';
 import './App.css';
+import './mobile.css';
+import './iphone12.css';
 
 function App() {
   return (

@@ -203,8 +203,19 @@ const Theater = () => {
     return groups;
   };
 
+  // Helper to calculate aisle width based on screen size
+  const getResponsiveAisleWidth = (baseWidth) => {
+    if (window.innerWidth <= 390) {
+      return baseWidth * 0.5; // Half width on iPhone 12 and similar
+    } else if (window.innerWidth <= 600) {
+      return baseWidth * 0.75; // 75% width on other mobile devices
+    }
+    return baseWidth; // Full width on larger screens
+  };
+
   const renderRow = (rowIndex, seatsPerHalf, aisleWidth, sectionType) => {
     const seatGroups = getSeatGroups();
+    const responsiveAisleWidth = getResponsiveAisleWidth(aisleWidth);
 
     // Helper to get left/right seats for a row and group
     const getSideSeats = (seats, side) =>
@@ -396,7 +407,7 @@ const Theater = () => {
           </div>
 
           {/* Aisle space */}
-          <div style={{ display: 'inline-block', width: `${aisleWidth * 40}px` }} />
+          <div style={{ display: 'inline-block', width: `${responsiveAisleWidth * 40}px` }} />
 
           {/* Right side seats and label */}
           <div style={{ display: 'inline-block', position: 'relative' }}>
@@ -538,8 +549,28 @@ const Theater = () => {
     setDragStartSeat(null);
   };
 
+  const handleScroll = (e) => {
+    // Prevent pull-to-refresh behavior
+    if (e.target.classList.contains('theater') || e.target.classList.contains('seating-area')) {
+      e.stopPropagation();
+    }
+  };
+
+  React.useEffect(() => {
+    // Prevent zoom gestures
+    document.addEventListener('gesturestart', (e) => e.preventDefault());
+    document.addEventListener('gesturechange', (e) => e.preventDefault());
+    document.addEventListener('gestureend', (e) => e.preventDefault());
+
+    return () => {
+      document.removeEventListener('gesturestart', (e) => e.preventDefault());
+      document.removeEventListener('gesturechange', (e) => e.preventDefault());
+      document.removeEventListener('gestureend', (e) => e.preventDefault());
+    };
+  }, []);
+
   return (
-    <div className="theater">
+    <div className="theater" onScroll={handleScroll}>
       <div className="controls" style={{ marginBottom: '20px', textAlign: 'center' }}>
         {/* ...existing code... */}
         <button
@@ -557,7 +588,7 @@ const Theater = () => {
             cursor: 'pointer'
           }}
         >
-          {isLabeling ? 'Cancel Selection' : 'Make Seating Chart'}
+          {isLabeling ? 'Stop Making Chart' : 'Make Seating Chart'}
         </button>
         <button
           onClick={() => {
@@ -567,8 +598,8 @@ const Theater = () => {
           style={{
             padding: '8px 16px',
             margin: '0 10px',
-            backgroundColor: isClearing ? '#ffc107' : '#6c757d',
-            color: isClearing ? 'black' : 'white',
+            backgroundColor: isClearing ? '#007bff' : '#90EE90',
+            color: isClearing ? 'white' : 'black',
             border: 'none',
             borderRadius: '4px',
             cursor: 'pointer'
@@ -583,7 +614,7 @@ const Theater = () => {
           style={{
             padding: '8px 16px',
             margin: '0 10px',
-            backgroundColor: mode === 'seating' ? '#6c63ff' : '#e0e0e0',
+            backgroundColor: mode === 'seating' ? '#007bff' : '#90EE90',
             color: mode === 'seating' ? 'white' : 'black',
             border: 'none',
             borderRadius: '4px',
@@ -649,6 +680,7 @@ const Theater = () => {
       )}
       <div
         className="seating-area"
+        data-mode={mode}
         style={{
           display: 'flex',
           flexDirection: 'column',
@@ -658,6 +690,7 @@ const Theater = () => {
           boxSizing: 'border-box',
           overflowX: 'auto',
           padding: '0 2vw',
+          position: 'relative'
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}

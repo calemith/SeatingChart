@@ -1,0 +1,93 @@
+/* Mobile-specific improvements */
+html {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
+
+.App {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.theater {
+  height: calc(100vh - 150px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
+
+.seating-area {
+  touch-action: none !important;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transform: scale(0.95);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative !important;
+}
+
+/* Ensure labels are always visible */
+.seat-label {
+  position: absolute !important;
+  z-index: 15 !important;
+}
+
+/* Increase z-index for preview labels */
+.seat-label[data-preview="true"] {
+  z-index: 25 !important;
+}
+
+/* Increase z-index for sat labels */
+.seat-label[data-sat="true"] {
+  z-index: 20 !important;
+}
+
+.seat {
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  margin: 8px !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Prevent text selection when double tapping */
+* {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection in input fields */
+input {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Sticky controls at the top */
+.controls {
+  position: sticky;
+  top: 0;
+  background: #184d25;
+  z-index: 100;
+  padding: 10px 0;
+}
