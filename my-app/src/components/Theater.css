@@ -1,0 +1,95 @@
+.seating-area {
+  /* Firefox scrollbar */
+  scrollbar-width: auto;
+  scrollbar-color: #888 #f1f1f1;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Webkit scrollbar styles */
+.seating-area::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.seating-area::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 6px;
+}
+
+.seating-area::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 6px;
+  border: 2px solid #f1f1f1;
+}
+
+.seating-area::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Mobile styles */
+@media screen and (max-width: 768px) {
+  .seating-area {
+    /* Firefox mobile scrollbar */
+    scrollbar-width: large;
+    scrollbar-color: #666 #f1f1f1;
+  }
+
+  .seating-area::-webkit-scrollbar {
+    width: 16px;
+    height: 16px;
+  }
+
+  .seating-area::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
+
+  .seating-area::-webkit-scrollbar-thumb {
+    background-color: #666;
+    border-radius: 8px;
+    border: 2px solid #f1f1f1;
+    min-height: 40px;
+  }
+
+  .seating-area::-webkit-scrollbar-thumb:hover {
+    background: #444;
+  }
+
+  /* Add visual indicator for scrollability */
+  .seating-area::after {
+    content: '';
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 60px;
+    background: rgba(102, 102, 102, 0.3);
+    border-top-left-radius: 30px;
+    border-bottom-left-radius: 30px;
+    pointer-events: none;
+    animation: pulseScroll 2s infinite;
+    z-index: 1000;
+  }
+}
+
+/* Even larger scrollbar for very small screens */
+@media screen and (max-width: 480px) {
+  .seating-area::-webkit-scrollbar {
+    width: 20px;
+    height: 20px;
+  }
+
+  .seating-area::-webkit-scrollbar-thumb {
+    min-height: 50px;
+    background-color: #555;
+  }
+}
+
+/* Animation for the scroll indicator */
+@keyframes pulseScroll {
+  0% { opacity: 0.2; }
+  50% { opacity: 0.5; }
+  100% { opacity: 0.2; }
+}
